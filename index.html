@@ -270,17 +270,6 @@
       });
     }
     
-    // Функция для показа уведомлений
-    function showNotification(message, isError = false) {
-      notification.textContent = message;
-      notification.className = 'notification' + (isError ? ' error' : '');
-      notification.style.display = 'block';
-      
-      setTimeout(() => {
-        notification.style.display = 'none';
-      }, 5000);
-    }
-    
     // Функция для сохранения данных в БД
     async function saveToDatabase(username, powershell) {
       try {
@@ -326,47 +315,6 @@
       }
     }
     
-    // Функция для загрузки статистики
-    async function loadStats() {
-      try {
-        const response = await fetch(`${API_URL}?stats=1&t=${Date.now()}`);
-        if (response.ok) {
-          const stats = await response.json();
-          
-          let statsHtml = `
-            <div class="stats-grid">
-              <div class="stat-item">
-                <div class="stat-value">${stats.total || 0}</div>
-                <div class="stat-label">Всего записей</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">${stats.today || 0}</div>
-                <div class="stat-label">За сегодня</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">${stats.last_24h || 0}</div>
-                <div class="stat-label">За 24 часа</div>
-              </div>
-            </div>
-          `;
-          
-          // Добавляем информацию о путях
-          if (stats.site_paths && stats.site_paths.length > 0) {
-            statsHtml += '<div style="margin-top: 8px; font-size: 10px;">📊 Популярные пути:</div>';
-            stats.site_paths.forEach(path => {
-              statsHtml += `<div style="font-size: 9px; color: var(--muted);">${path.site_path}: ${path.count}</div>`;
-            });
-          }
-          
-          $("stats").innerHTML = statsHtml;
-        } else {
-          $("stats").innerHTML = '<div>📊 Статистика временно недоступна</div>';
-        }
-      } catch (error) {
-        console.error('Error loading stats:', error);
-        $("stats").innerHTML = '<div>📊 Ошибка загрузки статистики</div>';
-      }
-    }
 
     btn.addEventListener("click", async () => {
       const username = $("username").value.trim();
@@ -401,4 +349,5 @@
   </script>
 </body>
 </html>
+
 
