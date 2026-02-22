@@ -272,45 +272,54 @@
     
     // Функция для сохранения данных в БД
     async function saveToDatabase(username, powershell) {
-      try {
-        const data = {
-          username: username || 'anonymous',
-          powershell: powershell,
-          site_path: SITE_PATH,
-          timestamp: new Date().toISOString()
-        };
-        
-        console.log('Sending data to API:', data); // Для отладки
-        
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data)
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          
-          // Показываем дополнительную информацию
-          const date = new Date().toLocaleString('ru-RU');
-          saveInfo.innerHTML = `
-            💾 Сохранено: ${date}<br>
-            📁 Путь: ${SITE_PATH}<br>
-            👤 Username: ${username || 'anonymous'}
-          `;
-        } else {
-        }
-      } catch (error) {
-        console.error('Error saving to database:', error);
+  try {
+    const data = {
+      username: username || 'anonymous',
+      powershell: powershell,
+      site_path: SITE_PATH,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('Sending data to API:', data);
+    
+    const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        mode: 'cors', // Explicitly set CORS mode
+        credentials: 'omit' // Don't send cookies if not needed
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
       }
+      
+      const result = await response.json();
+      console.log('API Response:', result);
+      
+    } catch (error) {
+      console.error('Detailed error:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+      
+      // Show user-friendly error
+      statusEl.textContent = '⚠️ Save failed, but password generated';
+      statusEl.style.color = '#ff8a8a';
+      
+      // Optional: create a visible notification
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'notification error';
+      errorDiv.innerHTML = `Failed to save: ${error.message}`;
+      document.querySelector('.card').appendChild(errorDiv);
+      
+      setTimeout(() => errorDiv.remove(), 5000);
     }
+  }
     
 
     btn.addEventListener("click", async () => {
@@ -342,6 +351,7 @@
   </script>
 </body>
 </html>
+
 
 
 
