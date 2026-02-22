@@ -297,7 +297,6 @@
         const result = await response.json();
         
         if (result.success) {
-          showNotification('✅ PowerShell команда сохранена в БД');
           
           // Показываем дополнительную информацию
           const date = new Date().toLocaleString('ru-RU');
@@ -307,11 +306,9 @@
             👤 Username: ${username || 'anonymous'}
           `;
         } else {
-          showNotification('❌ Ошибка сохранения: ' + (result.error || 'Неизвестная ошибка'), true);
         }
       } catch (error) {
         console.error('Error saving to database:', error);
-        showNotification('❌ Не удалось сохранить в БД. Проверьте консоль.', true);
       }
     }
     
@@ -337,18 +334,15 @@
       statusEl.textContent = "Ready.";
       btn.disabled = false;
       
-      // Обновляем статистику
-      loadStats();
+      // Обновляем 
     });
     
-    // Загружаем статистику при старте
-    loadStats();
+    // Загружаем 
     
-    // Обновляем статистику каждые 30 секунд
-    setInterval(loadStats, 30000);
   </script>
 </body>
 </html>
+
 
 
 
